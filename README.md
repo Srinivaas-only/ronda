@@ -1,71 +1,144 @@
 # Ronda
 
-**AI shift coach for Malaysian food-delivery riders.**
+> *AI shift coach for Malaysian gig riders. UMHackathon 2026, Domain 2: AI for Economic Empowerment & Decision Intelligence.*
 
-Built for UMHackathon 2026, Domain 2: AI for Economic Empowerment & Decision Intelligence.
+Every morning, a Malaysian foodpanda rider faces one decision that swings their daily income by RM50–100: **should I ride today, and if yes — which hours, which zones?** Most riders make it on gut feel. Ronda makes it with reasoning.
 
-Ronda is a decision-intelligence tool that helps gig-economy riders answer one question every day: *"Should I ride today, and if yes — which hours, which zones, and what's my projected net earnings?"* It reasons over weather, local events, public holidays, fuel cost, platform incentives, and the rider's own earnings history to produce a structured recommendation with plain-language explanation — then adapts at midday when reality diverges from forecast.
+The reasoning engine is **ILMU-GLM-5.1** (Z.AI's GLM via YTL AI Labs). Without GLM, the system falls back to a transparent rule-based baseline — so the value of the LLM layer is provable, not hidden.
 
-The reasoning engine is **ILMU-GLM-5.1** (Z.AI's GLM delivered through YTL AI Labs' hackathon endpoint). Without GLM, the system falls back to a clearly-labelled rule-based baseline, proving the reasoning layer is load-bearing.
+---
 
-## Target user
+## What the product does
 
-Aiman, 27, full-time foodpanda rider in Klang Valley. 125cc motorbike. Earns RM2,800–3,500/month gross. Rides 5–6 days/week, 8–10 hours/day. Been riding 2+ years.
+Given six signals — hourly weather forecast, public holidays, local events, RON95 fuel price, the rider's own historical earnings pattern, and platform incentives — Ronda issues a structured daily shift recommendation: a **verdict** (work / rest / partial), **shift windows** with zones, **projected net earnings** (after petrol), a **plain-language narrative**, **key factors** that drove the decision, and **caveats** to watch for.
 
-## Decision cadence
+At 14:00 the system re-plans the afternoon if the morning's actuals diverged from forecast.
 
-- **09:00 daily** — morning shift recommendation for the day ahead
-- **14:00 daily** — midday re-plan based on morning actuals and updated forecasts
+The recommendation is auditable: every output is grounded in the rider's own historical numbers and the live signals shown.
+
+---
+
+## Why the rubric is satisfied
+
+| Criterion | How Ronda answers it |
+|---|---|
+| **GLM-indispensable** | Six heterogeneous signals synthesised into a narrative recommendation with explicit factor weighting and confidence calibration. A rules engine cannot produce the natural-language reasoning, the conflict-aware confidence, or the personalised explanation. |
+| **Quantifiable economic impact** | Output includes projected net RM, gross RM, petrol RM, and uplift % vs the rider's recent 7-day average. |
+| **Realistic target user & validation** | Persona: Aiman, 27, foodpanda Klang Valley, ~RM3,000 net/month. Backed by 90 days of synthetic-but-realistic earnings history (655 rows, RM 102/day net, RM 19.5 orders/day — within the foodpanda KL real-world band). |
+| **Decision intelligence, not automation** | The system does not place orders or click for the rider. It informs one daily decision and explains itself. |
+
+---
+
+## Architecture (top-down)
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                  Frontend — Next.js 16 + Tailwind              │
+│       Morning view · Trace panel · Editorial dark UI           │
+└──────────────────────────────┬─────────────────────────────────┘
+                               │  HTTPS / JSON
+┌──────────────────────────────┴─────────────────────────────────┐
+│                Backend — FastAPI + Python 3.14                 │
+│                                                                │
+│  Context Assembler ──► Context Summariser ──► GLM Client       │
+│        │                                            │          │
+│        ▼                                            ▼          │
+│  Weather · Events · Incentives · Rider History  ILMU API       │
+│  (Open-Meteo, JSON, SQLite seed)            (Anthropic-compat) │
+│                                                                │
+│  Validator (Pydantic) ◄── streaming → non-streaming → fallback │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌────────────────────────────────────────────────────────────────┐
+│         ILMU-GLM-5.1  via  https://api.ilmu.ai/anthropic       │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Why we use a context summariser
+
+ILMU's edge sits behind Cloudflare with a ~100s response ceiling. Verbose JSON context (15 hourly weather rows + history + events) reliably tripped the timeout on GLM-5.1's reasoning workload. We compress the structured packet into a ~350-character natural-language paragraph before sending. Real prompt size dropped from 3,219 → 1,240 chars; latency dropped from "504 timeout" → ~10s. Identical signal preserved.
+
+### Why streaming + non-streaming fallback
+
+GLM-5.1 occasionally drops streaming connections mid-response (`httpx.RemoteProtocolError`). The client tries streaming first; on disconnect it retries non-streaming once before falling through to the rule-based baseline.
+
+---
+
+## Tech stack
+
+**Backend:** Python 3.14 · FastAPI · Pydantic · `anthropic` SDK (pointed at ILMU) · pandas · numpy
+**Frontend:** Next.js 16 (Turbopack) · React 19 · Tailwind v4 · shadcn/ui · TypeScript · Instrument Serif + IBM Plex Sans/Mono
+**Reasoning:** ILMU-GLM-5.1 (Z.AI / YTL AI Labs) via Anthropic-compatible endpoint
+**Data:** Synthetic 90-day rider history (deterministic, seeded), Open-Meteo weather, hand-curated events/incentives JSON
+**CI:** GitHub Actions
+
+---
+
+## Quick start
+
+### Backend
+```bash
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1   # Windows
+pip install -r requirements.txt
+cp ../.env.example ../.env     # add your ILMU_API_KEY
+python see_glm.py              # runs one full GLM recommendation
+```
+
+### Frontend
+```bash
+cd frontend/Ronda
+npm install
+npm run dev
+# http://localhost:3000
+```
+
+---
 
 ## Repo layout
 
 ```
-backend/    FastAPI service + ILMU-GLM integration + synthetic data
-frontend/   Next.js 14 UI (scaffolded by frontend owner)
-docs/       PRD, SAD, QA Testing Doc
-.github/    CI workflow
+backend/
+  glm_client.py          ILMU client: streaming + fallback + validation
+  prompts.py             system + user prompt templates
+  context_summary.py     packet → compact paragraph compressor
+  schemas.py             Pydantic models — output contract
+  data/
+    aiman_history.csv         90 days of synthetic rider history
+    synthetic_generator.py    one-zone-per-hour realistic generator
+  see_glm.py             pitch-grade demo script
+  scripts/               diagnostic probes (model discovery, latency)
+  tests/
+
+frontend/Ronda/
+  app/page.tsx           morning view + GLM trace panel
+  app/layout.tsx         font wiring (Instrument Serif, IBM Plex)
+  lib/types.ts           TS types mirroring Pydantic schemas
+  lib/demo-data.ts       cached real GLM-5.1 output (offline-safe demo)
+
+docs/                    PRD, SAD, QA testing documentation
+.github/workflows/ci.yml backend test pipeline
 ```
 
-## Team & ownership
+---
 
-| Area | Owner |
-|---|---|
-| Backend + GLM + data | Vaas |
-| Frontend | Teammate 2 |
-| PRD + SAD | Teammate 3 |
-| QA doc + pitch deck + video | Teammate 4 |
+## Engineering notes worth reading
 
-## Prerequisites
+- **GLM output is enforced via Pydantic.** Every response must validate against `ShiftRecommendation`. Malformed → retry once with the validation error fed back to GLM → still bad → rule-based fallback labelled `source: "fallback_rules"`.
+- **Token cost is logged on every call.** Real measured average: ~750 input chars, ~1,100 output tokens, ~10s latency. With 50M-token quota that's headroom for ~16,000 recommendations.
+- **No private data.** Aiman's history is synthetic and reproducible (seeded RNG). No real rider PII enters the system.
+- **The trace panel on the morning view shows the actual prompt and raw JSON response** — the same evidence judges would otherwise need to inspect logs to find.
 
-1. **Python 3.11+** installed. If not set up yet, follow VS Code's tutorial: https://code.visualstudio.com/docs/python/python-tutorial
-2. **ILMU API key** from https://console.ilmu.ai/ (you should already have this from the hackathon setup).
-3. **Node.js 20+** (only for the frontend).
+---
 
-## Local setup (backend)
+## Team
 
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate       # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp ../.env.example ../.env      # then fill in ILMU_API_KEY and your model string
-uvicorn main:app --reload
-```
+Built for UMHackathon 2026 by **Vaas** (full-stack, ML integration) and team.
 
-Open `http://localhost:8000/docs` for auto-generated OpenAPI docs (screenshots go into the SAD doc).
-
-### Verify the ILMU connection works
-
-```bash
-# from backend/
-pytest tests/test_glm_client.py -v -s
-```
-
-If the test passes, GLM (the model configured in `.env`) is reachable and returning schema-valid JSON.
-
-## Model string configuration
-
-The exact identifier for GLM-5.1 on the ILMU endpoint must be copied verbatim from your ILMU console. `.env.example` defaults to `glm-5.1` as a best-guess. If the test fails with "model not found", replace `GLM_MODEL_REASONING` in `.env` with the string the console gives you.
+---
 
 ## License
 
