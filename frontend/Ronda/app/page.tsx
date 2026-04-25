@@ -1,6 +1,6 @@
 "use client";
 
-import { demoContext, demoRecommendation, demoMeta } from "@/lib/demo-data";
+import { demoContext, demoRecommendation, demoMeta, demoTrace } from "@/lib/demo-data";
 import type { Confidence, Impact, Weight } from "@/lib/types";
 
 const VERDICT_LABEL: Record<string, string> = {
@@ -112,7 +112,9 @@ export default function MorningView() {
                 className="flex items-baseline justify-between gap-4 border-b border-dashed border-[#1a1a1a]/15 pb-3 last:border-0 dark:border-[#e8e4d8]/15"
               >
                 <span className="font-mono text-2xl tracking-tight">
-                  {w.start}<span className="text-[#1a1a1a]/40 dark:text-[#e8e4d8]/40"> — </span>{w.end}
+                  {w.start}
+                  <span className="text-[#1a1a1a]/40 dark:text-[#e8e4d8]/40"> — </span>
+                  {w.end}
                 </span>
                 <span className="font-serif italic text-[#1a1a1a]/80 dark:text-[#e8e4d8]/80">
                   {w.zones.join(" · ")}
@@ -137,7 +139,10 @@ export default function MorningView() {
           </h3>
           <ul className="divide-y divide-[#1a1a1a]/10 dark:divide-[#e8e4d8]/10">
             {r.key_factors.map((f, i) => (
-              <li key={i} className="grid grid-cols-[auto_1fr_auto] items-baseline gap-4 py-4">
+              <li
+                key={i}
+                className="grid grid-cols-[auto_1fr_auto] items-baseline gap-4 py-4"
+              >
                 <span
                   className={`font-mono text-lg ${
                     f.impact === "positive"
@@ -172,7 +177,7 @@ export default function MorningView() {
               Watch out for
             </h3>
             <ul className="space-y-2">
-              {r.caveats.map((c, i) => (
+              {r.caveats.map((cav, i) => (
                 <li
                   key={i}
                   className="flex gap-3 text-[15px] leading-relaxed text-[#1a1a1a]/80 dark:text-[#e8e4d8]/80"
@@ -180,7 +185,7 @@ export default function MorningView() {
                   <span className="font-mono text-[#c8412c] dark:text-[#e87158]" aria-hidden>
                     ⚠
                   </span>
-                  <span>{c}</span>
+                  <span>{cav}</span>
                 </li>
               ))}
             </ul>
@@ -197,6 +202,34 @@ export default function MorningView() {
             </p>
           </div>
         </footer>
+
+        {/* ─── GLM trace panel ─────────────────────────────────── */}
+        <details className="group mt-10 rounded-sm border border-[#1a1a1a]/15 bg-[#15140f]/5 dark:border-[#e8e4d8]/15 dark:bg-[#e8e4d8]/[0.03]">
+          <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 font-mono text-[10px] uppercase tracking-[0.25em] text-[#1a1a1a]/70 hover:text-[#1a1a1a] dark:text-[#e8e4d8]/70 dark:hover:text-[#e8e4d8]">
+            <span>Developer trace — view GLM-5.1 prompt &amp; response</span>
+            <span
+              className="font-mono text-base transition-transform group-open:rotate-45"
+              aria-hidden
+            >
+              +
+            </span>
+          </summary>
+
+          <div className="space-y-6 border-t border-[#1a1a1a]/10 px-5 py-6 dark:border-[#e8e4d8]/10">
+            <div className="grid gap-3 font-mono text-[11px] sm:grid-cols-3">
+              <Kv label="Endpoint" value="api.ilmu.ai/anthropic" />
+              <Kv label="Model" value={demoMeta.model} />
+              <Kv label="Latency" value={`${demoMeta.latency_seconds.toFixed(1)}s`} />
+              <Kv label="Output tokens" value={demoMeta.output_tokens.toString()} />
+              <Kv label="Prompt size" value={`${demoMeta.prompt_chars} chars`} />
+              <Kv label="Context summary" value={`${demoMeta.context_summary_chars} chars`} />
+            </div>
+
+            <TraceBlock label="System prompt" body={demoTrace.systemPrompt} />
+            <TraceBlock label="User prompt" body={demoTrace.userPrompt} />
+            <TraceBlock label="Raw response (JSON)" body={demoTrace.rawResponse} />
+          </div>
+        </details>
       </div>
     </main>
   );
@@ -236,6 +269,28 @@ function Stat({
           {sub}
         </span>
       )}
+    </div>
+  );
+}
+
+function Kv({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-0.5 border-l-2 border-[#c8412c]/40 pl-3 dark:border-[#e87158]/40">
+      <span className="text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">{label}</span>
+      <span className="text-[#1a1a1a] dark:text-[#e8e4d8]">{value}</span>
+    </div>
+  );
+}
+
+function TraceBlock({ label, body }: { label: string; body: string }) {
+  return (
+    <div>
+      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">
+        {label}
+      </p>
+      <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-sm border border-[#1a1a1a]/10 bg-[#15140f]/[0.04] p-4 font-mono text-[11px] leading-relaxed text-[#1a1a1a]/85 dark:border-[#e8e4d8]/10 dark:bg-black/30 dark:text-[#e8e4d8]/85">
+        {body}
+      </pre>
     </div>
   );
 }
