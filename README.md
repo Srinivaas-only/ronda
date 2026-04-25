@@ -136,7 +136,15 @@ docs/                    PRD, SAD, QA testing documentation
 
 ## Team
 
-Built for UMHackathon 2026 by **Vaas** (full-stack, ML integration) and team.
+Built for UMHackathon 2026 by five students from the Faculty of Computer Science & Information Technology, Universiti Malaya.
+
+| Member | Role | Primary contribution |
+|---|---|---|
+| **Srinivaas** | Backend & ML Integration Lead | FastAPI service, ILMU-GLM-5.1 client with streaming + non-streaming + rule-based fallback, Pydantic schema enforcement, context summariser, synthetic data generator, Cloudflare timeout diagnosis & resolution. |
+| **Thenesh** | Frontend Engineering | Next.js 16 + Tailwind v4 implementation, side-by-side form layout, custom dropdown component, trace panel, comparison view routing, mobile responsiveness, dark-mode wiring. |
+| **Teeva** | UI/UX Design & Brand | Editorial visual system (Instrument Serif + IBM Plex Mono), colour palette, dark-cream tonal range, typographic hierarchy, brand voice ("Selamat pagi, Aiman" greeting tone), pitch deck visual direction. |
+| **Davud** | Quality Assurance & Documentation | Test scenario design, risk-assessment matrix, prompt/response validation pairs, hallucination handling tests, quality assurance documentation, CI workflow definition, edge-case scripting. |
+| **Ambhrish** | Product Strategy & Pitch | Persona research (Aiman, Mei Ling, Ravi), market sizing for Malaysian gig economy, pitch deck narrative arc, 10-minute pitch video script and direction, judging-criteria alignment. |
 
 ---
 
