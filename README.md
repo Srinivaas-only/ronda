@@ -136,8 +136,6 @@ docs/                    PRD, SAD, QA testing documentation
 
 ## Team
 
-Built for UMHackathon 2026 by five students from the Faculty of Computer Science & Information Technology, Universiti Malaya.
-
 | Member | Role | Primary contribution |
 |---|---|---|
 | **Srinivaas** | Backend & ML Integration Lead | FastAPI service, ILMU-GLM-5.1 client with streaming + non-streaming + rule-based fallback, Pydantic schema enforcement, context summariser, synthetic data generator, Cloudflare timeout diagnosis & resolution. |
