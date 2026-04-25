@@ -18,14 +18,7 @@ Built by Srinivaas, Thenesh, Teeva, Davud, and Ambrish
 
 ## 📂 Submission Documents
 
-All 4 required documents are in the [`/docs`](./docs) folder:
-
-| # | Document | File |
-|---|---|---|
-| 1 | Product Requirement Document | [`docs/UMHackathon2026_Ronda_PRD.pdf`](./docs/UMHackathon2026_Ronda_PRD.pdf) |
-| 2 | System Analysis Document | [`docs/UMHackathon2026_Ronda_SAD.pdf`](./docs/UMHackathon2026_Ronda_SAD.pdf) |
-| 3 | Quality Assurance Testing Documentation | [`docs/UMHackathon2026_Ronda_QATD.pdf`](./docs/UMHackathon2026_Ronda_QATD.pdf) |
-| 4 | Pitch Deck | [`docs/UMHackathon2026_Ronda_PitchDeck.pdf`](./docs/UMHackathon2026_Ronda_PitchDeck.pdf) |
+All required submission documents (PRD, SAD, QATD, Pitch Deck) are in the **`/docs`** folder of this repository. Navigate there to view or download the PDFs.
 
 ---
 
