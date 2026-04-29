@@ -4,6 +4,9 @@ Ronda backend — FastAPI app exposing /api/recommend.
 Run locally:
   uvicorn main:app --reload --port 8000
 
+Run on Render (production):
+  Render uses the Procfile: uvicorn main:app --host 0.0.0.0 --port $PORT
+
 Endpoint:
   POST /api/recommend
     body: RecommendRequest (see api_models.py)
@@ -24,7 +27,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-# Load .env BEFORE importing GlmClient so it sees the API key
+# Load .env BEFORE importing GlmClient so it sees the API key.
+# In production (Render), env vars are injected directly so this is a no-op.
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 from api_models import RecommendRequest, RecommendResponse
@@ -46,7 +50,7 @@ logging.basicConfig(
 logger = logging.getLogger("ronda.api")
 
 
-# ─── App lifecycle ────────────────────────────────────────────
+# ─── App lifecycle ─────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -58,25 +62,51 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Ronda API",
     description="AI shift coach for Malaysian gig riders.",
-    version="0.1.0",
+    version="1.0.0",
     lifespan=lifespan,
 )
 
-# CORS — allow the Next.js dev server and any future deployment
+# ─── CORS ──────────────────────────────────────────────────────────────────
+# Allow localhost for dev + any production frontend URL set via FRONTEND_ORIGINS.
+# FRONTEND_ORIGINS is a comma-separated list, e.g.:
+#   FRONTEND_ORIGINS=https://ronda.vercel.app,https://ronda-git-main.vercel.app
+_default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://192.168.68.104:3000",
+]
+_extra_origins_env = os.getenv("FRONTEND_ORIGINS", "").strip()
+_extra_origins = [o.strip() for o in _extra_origins_env.split(",") if o.strip()]
+_allowed_origins = _default_origins + _extra_origins
+
+# Also allow ALL Vercel preview URLs via regex (every PR gets a unique URL)
+_allowed_origin_regex = r"https://.*\.vercel\.app"
+
+logger.info("CORS allowed origins: %s", _allowed_origins)
+logger.info("CORS allowed origin regex: %s", _allowed_origin_regex)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://192.168.68.104:3000",  # Vaas's local network IP for phone testing
-    ],
+    allow_origins=_allowed_origins,
+    allow_origin_regex=_allowed_origin_regex,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
 
-# ─── Health ───────────────────────────────────────────────────
+# ─── Health ────────────────────────────────────────────────────────────────
+
+@app.get("/")
+def root():
+    """Root endpoint so Render's health check sees a 200."""
+    return {
+        "service": "ronda-api",
+        "status": "ok",
+        "docs": "/docs",
+        "health": "/api/health",
+    }
+
 
 @app.get("/api/health")
 def health():
@@ -87,7 +117,7 @@ def health():
     }
 
 
-# ─── Recommendation endpoint ──────────────────────────────────
+# ─── Recommendation endpoint ───────────────────────────────────────────────
 
 @app.post("/api/recommend", response_model=RecommendResponse)
 def recommend(req: RecommendRequest):
@@ -125,7 +155,7 @@ def recommend(req: RecommendRequest):
     )
 
 
-# ─── Helpers ──────────────────────────────────────────────────
+# ─── Helpers ───────────────────────────────────────────────────────────────
 
 def _build_context_packet(req: RecommendRequest) -> ContextPacket:
     """Translate the simple form input into the rich ContextPacket the GLM client expects."""
