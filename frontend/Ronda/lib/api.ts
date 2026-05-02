@@ -48,7 +48,7 @@ export interface RecommendResponse {
 
 export const defaultRequest: RecommendRequest = {
   rider_name: "Aiman",
-  rider_platform: "foodpanda",
+  rider_platform: "Grab",
   home_zone: "Petaling Jaya",
   day_of_week: "Friday",
   date: "2026-04-25",
@@ -61,7 +61,7 @@ export const defaultRequest: RecommendRequest = {
     temp_c: 30,
   },
   events_text: "KL Grand Prix fan zone in Bukit Jalil 18:00–23:00 (large crowd)",
-  incentives_text: "+RM2 per delivery in Bangsar 18:00–22:00",
+  incentives_text: "ShopeeFood: +RM4 flash incentive in Bangsar (Valid 12pm-3pm)\nGrab: 1.2x boost in PJ (Valid all day)\nFoodPanda: No active promos",
 };
 
 export async function getRecommendation(

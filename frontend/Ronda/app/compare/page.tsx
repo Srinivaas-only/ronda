@@ -1,170 +1,210 @@
 "use client";
 
 import Link from "next/link";
-import { demoContext, demoRecommendation } from "@/lib/demo-data";
-import { ruleBasedRecommendation, glmAdvantages } from "@/lib/compare-data";
-import type { ShiftRecommendation } from "@/lib/types";
+import {
+  ruleBasedRecommendation,
+  glmAdvantages,
+} from "@/lib/compare-data";
+import { demoRecommendation } from "@/lib/demo-data";
+
+const NEON = "#CCFF00";
+const ALERT_RED = "#FF3B3B";
+
+const VERDICT_LABEL: Record<string, string> = {
+  work: "RIDE TODAY",
+  rest: "REST TODAY",
+  partial: "RIDE PART-TIME",
+};
 
 export default function ComparePage() {
-  const c = demoContext;
+  const rules = ruleBasedRecommendation;
+  const glm = demoRecommendation;
+  const diff = glm.projected_net_rm - rules.projected_net_rm;
 
   return (
-    <main className="min-h-screen bg-[#f4efe6] text-[#1a1a1a] dark:bg-[#0d0c0a] dark:text-[#e8e4d8]">
-      <div className="mx-auto max-w-6xl px-6 py-10 sm:px-10 sm:py-16">
-        <header className="mb-12 border-b border-[#1a1a1a]/15 pb-6 dark:border-[#e8e4d8]/15">
-          <div className="flex items-end justify-between gap-4 flex-wrap">
-            <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#1a1a1a]/60 dark:text-[#e8e4d8]/60">
-                Ronda — Reasoning Comparison
-              </p>
-              <h1 className="mt-1 font-serif text-4xl font-normal italic tracking-tight">
-                With GLM, without GLM.
-              </h1>
-            </div>
-            <Link
-              href="/"
-              className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#1a1a1a]/60 hover:text-[#1a1a1a] dark:text-[#e8e4d8]/60 dark:hover:text-[#e8e4d8]"
-            >
-              ← back to morning brief
-            </Link>
+    <main className="min-h-screen bg-[#0a0a0a] text-[#f0f0f0]">
+      <div className="mx-auto max-w-5xl px-6 py-10 sm:px-10">
+        {/* Header */}
+        <div className="mb-10 flex items-center justify-between border-b border-[#222] pb-5">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">
+              Comparison · Same Friday, Same Rider
+            </p>
+            <h1 className="mt-2 font-serif text-3xl italic text-white">
+              What the rules engine missed
+            </h1>
           </div>
-          <p className="mt-4 max-w-3xl text-[15px] leading-relaxed text-[#1a1a1a]/75 dark:text-[#e8e4d8]/75">
-            Same rider, same inputs, same Friday in Klang Valley with afternoon
-            rain, the KL Grand Prix at Bukit Jalil, and a Bangsar bonus zone.
-            On the left: what a deterministic rules engine produces. On the
-            right: what ILMU-GLM-5.1 reasons. The gap is the value of the LLM.
+          <Link
+            href="/"
+            className="font-mono text-[10px] uppercase tracking-[0.25em] hover:underline"
+            style={{ color: NEON }}
+          >
+            ← back to brief
+          </Link>
+        </div>
+
+        {/* Side-by-side */}
+        <div className="grid gap-8 md:grid-cols-2">
+          {/* Rules Card */}
+          <Card label="Rules Engine (without GLM)" borderColor="#444">
+            <Verdict verdict={rules.recommendation} confidence={rules.confidence} />
+            <NetEarnings rm={rules.projected_net_rm} />
+            <ShiftList windows={rules.shift_windows} />
+            <Narrative text={rules.reasoning_narrative} />
+            <Meta source={rules.source} />
+          </Card>
+
+          {/* GLM Card */}
+          <Card label="Ronda-GLM (with Platform Arbitrage)" borderColor={NEON}>
+            <Verdict verdict={glm.recommendation} confidence={glm.confidence} />
+            <NetEarnings rm={glm.projected_net_rm} />
+            {/* Opportunity cost callout */}
+            {diff > 0 && (
+              <div className="rounded-lg p-3 mb-4" style={{ backgroundColor: `${NEON}10`, border: `1px solid ${NEON}40` }}>
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: NEON }}>
+                  💰 GLM found +RM{diff.toFixed(0)} extra
+                </p>
+                <p className="font-mono text-sm text-[#ccc] mt-1">
+                  Staying on Grab all day would have cost you RM{diff.toFixed(0)}
+                </p>
+              </div>
+            )}
+            <ShiftList windows={glm.shift_windows} highlight />
+            <Narrative text={glm.reasoning_narrative} />
+            <Meta source={glm.source} />
+          </Card>
+        </div>
+
+        {/* Delta */}
+        <div className="mt-8 rounded-xl border border-[#222] bg-[#111] p-6 text-center">
+          <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">
+            Net earnings difference
           </p>
-        </header>
-
-        <section className="mb-10 rounded-sm border border-[#1a1a1a]/15 bg-[#15140f]/[0.04] px-5 py-4 dark:border-[#e8e4d8]/15 dark:bg-[#e8e4d8]/[0.03]">
-          <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55 mb-2">
-            Today's inputs (identical for both engines)
+          <p className="mt-3 font-mono text-5xl font-black" style={{ color: diff > 0 ? NEON : ALERT_RED }}>
+            {diff > 0 ? "+" : ""}RM {diff.toFixed(0)}
           </p>
-          <ul className="grid gap-2 text-sm sm:grid-cols-2 sm:gap-x-8">
-            <li><span className="text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">Date:</span> {c.date} ({c.day_of_week})</li>
-            <li><span className="text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">7-day avg:</span> RM{c.recent_7day_avg_net_rm.toFixed(0)} net</li>
-            <li><span className="text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">Weather:</span> {c.weather_summary}</li>
-            <li><span className="text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">Fuel:</span> RON95 RM{c.fuel_price_ron95_rm_per_litre.toFixed(2)}/L</li>
-            <li className="sm:col-span-2"><span className="text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">Events:</span> {c.events_summary}</li>
-            <li className="sm:col-span-2"><span className="text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">Incentives:</span> {c.incentives_summary}</li>
-          </ul>
-        </section>
+          <p className="mt-2 font-mono text-sm text-[#999]">
+            {diff > 0
+              ? "Ronda-GLM catches the Switch Window. That's the difference between waiting for orders and getting back-to-back deliveries."
+              : "No advantage detected."}
+          </p>
+        </div>
 
-        <section className="grid gap-6 lg:grid-cols-2">
-          <RecCard title="Rules engine (no GLM)" subtitle="Deterministic fallback" rec={ruleBasedRecommendation} muted />
-          <RecCard title="ILMU-GLM-5.1" subtitle="Reasoning engine" rec={demoRecommendation} />
-        </section>
-
-        <section className="mt-14">
-          <h2 className="mb-4 border-b border-[#1a1a1a]/10 pb-2 font-mono text-[10px] uppercase tracking-[0.25em] dark:border-[#e8e4d8]/10">
+        {/* Advantages table */}
+        <section className="mt-12">
+          <h2 className="border-b border-[#222] pb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">
             What GLM caught that rules missed
           </h2>
-          <ul className="divide-y divide-[#1a1a1a]/10 dark:divide-[#e8e4d8]/10">
+          <div className="divide-y divide-[#1a1a1a]">
             {glmAdvantages.map((a, i) => (
-              <li key={i} className="grid gap-3 py-5 lg:grid-cols-[1fr_2fr_2fr] lg:gap-6">
-                <p className="font-medium">{a.category}</p>
-                <p className="text-sm leading-relaxed text-[#1a1a1a]/65 dark:text-[#e8e4d8]/65">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#1a1a1a]/45 dark:text-[#e8e4d8]/45">Rules: </span>
-                  {a.rules}
-                </p>
-                <p className="text-sm leading-relaxed">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#c8412c] dark:text-[#e87158]">GLM: </span>
-                  {a.glm}
-                </p>
-              </li>
+              <div key={i} className="grid gap-4 py-5 md:grid-cols-[180px_1fr_1fr]">
+                <p className="font-mono text-[11px] font-bold text-white">{a.category}</p>
+                <div className="rounded-lg border border-[#222] bg-[#111] p-3">
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#888] mb-1">Rules</p>
+                  <p className="text-[13px] leading-relaxed text-[#999]">{a.rules}</p>
+                </div>
+                <div className="rounded-lg p-3" style={{ backgroundColor: `${NEON}08`, border: `1px solid ${NEON}30` }}>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] mb-1" style={{ color: NEON }}>GLM</p>
+                  <p className="text-[13px] leading-relaxed text-[#ccc]">{a.glm}</p>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
 
-        <section className="mt-14 border-t border-[#1a1a1a]/15 pt-8 dark:border-[#e8e4d8]/15">
-          <blockquote className="border-l-2 border-[#c8412c] pl-5 font-serif text-xl italic leading-relaxed">
-            "If the GLM component is removed, the system should no longer be
-            able to generate meaningful insights or support decision-making
-            effectively."
-            <footer className="mt-2 font-mono text-[10px] not-italic uppercase tracking-[0.25em] text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">
-              — UMHackathon 2026, Domain 2 brief
-            </footer>
-          </blockquote>
-          <p className="mt-6 max-w-3xl text-[15px] leading-relaxed text-[#1a1a1a]/80 dark:text-[#e8e4d8]/80">
-            The rules engine on the left is what Ronda falls back to when GLM
-            is unreachable. It produces a safe, generic recommendation grounded
-            in the rider's average — but it cannot read events, weight
-            incentives, calibrate confidence, or explain itself. That gap is
-            why GLM is load-bearing, not decorative.
+        {/* Closing */}
+        <div className="mt-12 rounded-xl border border-[#222] bg-[#111] p-8 text-center">
+          <p className="font-serif text-xl italic text-white">
+            "The rules engine sees a number. Ronda-GLM sees an opportunity. Back-to-back deliveries, zero idle time, maximum net profit."
           </p>
-        </section>
+          <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">
+            Platform Arbitrage — the anti-ChatGPT edge
+          </p>
+        </div>
       </div>
     </main>
   );
 }
 
-function RecCard({
-  title,
-  subtitle,
-  rec,
-  muted = false,
-}: {
-  title: string;
-  subtitle: string;
-  rec: ShiftRecommendation;
-  muted?: boolean;
-}) {
-  const accent = muted ? "[#1a1a1a]/55" : "[#c8412c]";
-  const accentDark = muted ? "[#e8e4d8]/55" : "[#e87158]";
+/* ─── Sub-components ─── */
 
+function Card({
+  label, borderColor, children,
+}: { label: string; borderColor: string; children: React.ReactNode }) {
   return (
-    <div
-      className={`rounded-sm border p-6 ${
-        muted
-          ? "border-[#1a1a1a]/15 bg-[#15140f]/[0.03] dark:border-[#e8e4d8]/15 dark:bg-[#e8e4d8]/[0.02]"
-          : "border-[#c8412c]/40 bg-[#f4efe6] dark:border-[#e87158]/40 dark:bg-[#0d0c0a]"
-      }`}
-    >
-      <div className={`mb-1 font-mono text-[10px] uppercase tracking-[0.25em] text-${accent} dark:text-${accentDark}`}>
-        {title}
-      </div>
-      <p className="mb-6 font-serif italic text-sm text-[#1a1a1a]/60 dark:text-[#e8e4d8]/60">
-        {subtitle}
-      </p>
-
-      <p className="font-serif text-4xl font-normal leading-none tracking-tight">
-        {rec.recommendation === "work"
-          ? "Ride today."
-          : rec.recommendation === "rest"
-          ? "Rest today."
-          : "Ride part-time."}
-      </p>
-      <p className="mt-2 font-serif italic text-sm text-[#1a1a1a]/65 dark:text-[#e8e4d8]/65">
-        {rec.confidence} confidence
-      </p>
-
-      <div className="mt-6 flex items-baseline gap-3">
-        <span className="font-mono text-2xl font-medium tracking-tight">
-          RM {rec.projected_net_rm.toFixed(0)}
-        </span>
-        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#1a1a1a]/55 dark:text-[#e8e4d8]/55">
-          projected net
-        </span>
-      </div>
-
-      <ul className="mt-5 space-y-2 text-sm">
-        {rec.shift_windows.map((w, i) => (
-          <li key={i} className="flex items-baseline justify-between gap-3">
-            <span className="font-mono">{w.start} — {w.end}</span>
-            <span className="font-serif italic text-[#1a1a1a]/70 dark:text-[#e8e4d8]/70">
-              {w.zones.join(" · ")}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      <blockquote className="mt-6 border-l-2 border-[#1a1a1a]/20 pl-4 font-serif text-sm italic leading-relaxed text-[#1a1a1a]/85 dark:border-[#e8e4d8]/20 dark:text-[#e8e4d8]/85">
-        "{rec.reasoning_narrative}"
-      </blockquote>
-
-      <div className="mt-5 font-mono text-[10px] uppercase tracking-[0.25em] text-[#1a1a1a]/50 dark:text-[#e8e4d8]/50">
-        source: {rec.source}
-      </div>
+    <div className="rounded-xl border bg-[#111] p-6 space-y-4" style={{ borderColor }}>
+      <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">{label}</p>
+      {children}
     </div>
+  );
+}
+
+function Verdict({ verdict, confidence }: { verdict: string; confidence: string }) {
+  return (
+    <div className="flex items-end justify-between">
+      <span className="font-mono text-3xl font-black text-white">{VERDICT_LABEL[verdict]}</span>
+      <span
+        className="font-mono text-[10px] uppercase font-bold"
+        style={{ color: confidence === "high" ? NEON : confidence === "medium" ? "#FFA500" : ALERT_RED }}
+      >
+        {confidence}
+      </span>
+    </div>
+  );
+}
+
+function NetEarnings({ rm }: { rm: number }) {
+  return (
+    <div className="rounded-lg bg-[#0d0d0d] p-4 text-center">
+      <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">Net earnings</p>
+      <p className="mt-1 font-mono text-4xl font-black text-white">RM {rm.toFixed(0)}</p>
+    </div>
+  );
+}
+
+function ShiftList({ windows, highlight = false }: { windows: { start: string; end: string; zones: string[]; target_app?: string; opportunity_gain_rm?: number }[]; highlight?: boolean }) {
+  return (
+    <div className="space-y-2">
+      {windows.map((w, i) => (
+        <div key={i} className="flex items-center justify-between rounded-lg border border-[#222] bg-[#0d0d0d] px-4 py-2.5">
+          <span className="font-mono text-sm font-bold text-white">{w.start} — {w.end}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-serif text-xs italic text-[#999]">{w.zones.join(" · ")}</span>
+            {w.target_app && (
+              <span
+                className="rounded px-2 py-0.5 font-mono text-[9px] font-bold uppercase"
+                style={{
+                  color: highlight && (w.opportunity_gain_rm ?? 0) > 0 ? "black" : "#ccc",
+                  backgroundColor: highlight && (w.opportunity_gain_rm ?? 0) > 0 ? NEON : "#333",
+                }}
+              >
+                {w.target_app}
+              </span>
+            )}
+            {highlight && (w.opportunity_gain_rm ?? 0) > 0 && (
+              <span className="font-mono text-[10px] font-bold" style={{ color: NEON }}>
+                +RM{w.opportunity_gain_rm!.toFixed(0)}
+              </span>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Narrative({ text }: { text: string }) {
+  return (
+    <blockquote className="rounded-lg border-l-2 bg-[#0d0d0d] p-3 font-serif text-sm italic leading-relaxed text-[#ccc]" style={{ borderColor: "#333" }}>
+      "{text}"
+    </blockquote>
+  );
+}
+
+function Meta({ source }: { source: string }) {
+  return (
+    <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#555]">
+      source: {source}
+    </p>
   );
 }

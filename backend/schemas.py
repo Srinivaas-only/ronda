@@ -40,6 +40,8 @@ class ShiftWindow(BaseModel):
     start: str = Field(..., description="Start time HH:MM 24h")
     end: str = Field(..., description="End time HH:MM 24h")
     zones: list[str] = Field(..., description="Recommended zones for this window")
+    target_app: str = Field("", description="Recommended platform: ShopeeFood | Grab | FoodPanda")
+    opportunity_gain_rm: float = Field(0.0, ge=0, description="Estimated RM gain from switching to this platform vs staying on rider's current app")
 
 
 class KeyFactor(BaseModel):

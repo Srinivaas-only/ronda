@@ -125,12 +125,13 @@ def recommend(req: RecommendRequest):
 
     packet = _build_context_packet(req)
     ctx_summary = summarize_context(packet)
-    user_prompt = build_morning_user_prompt(ctx_summary)
+    incentives = req.incentives_text
+    user_prompt = build_morning_user_prompt(ctx_summary, incentives)
 
     t0 = time.perf_counter()
     try:
         client = GlmClient(model=os.getenv("GLM_MODEL_REASONING", "ilmu-glm-5.1"))
-        rec, usage = client.recommend_morning(packet)
+        rec, usage = client.recommend_morning(packet, incentives)
     except Exception as e:
         logger.exception("GLM call failed")
         raise HTTPException(status_code=500, detail=f"Reasoning engine error: {e}")

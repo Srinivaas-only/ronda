@@ -9,6 +9,8 @@ export interface ShiftWindow {
   start: string;
   end: string;
   zones: string[];
+  target_app?: string; // Recommended platform: ShopeeFood | Grab | FoodPanda
+  opportunity_gain_rm?: number; // Extra RM from switching vs staying on current app
 }
 
 export interface KeyFactor {

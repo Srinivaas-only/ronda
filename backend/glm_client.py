@@ -77,11 +77,11 @@ class GlmClient:
         )
 
     def recommend_morning(
-        self, packet: ContextPacket
+        self, packet: ContextPacket, incentives_text: str = ""
     ) -> tuple[ShiftRecommendation, GlmUsage | None]:
         ctx = summarize_context(packet)
         logger.info("Context summary (%d chars): %s", len(ctx), ctx)
-        user = build_morning_user_prompt(ctx)
+        user = build_morning_user_prompt(ctx, incentives_text)
         return self._call_and_validate(user, packet)
 
     def recommend_midday_replan(
@@ -89,12 +89,14 @@ class GlmClient:
         packet: ContextPacket,
         morning_recommendation: ShiftRecommendation,
         morning_actuals: dict[str, Any],
+        incentives_text: str = "",
     ) -> tuple[ShiftRecommendation, GlmUsage | None]:
         ctx = summarize_context(packet)
         user = build_midday_replan_user_prompt(
             ctx,
             morning_recommendation.model_dump_json(indent=None),
             json.dumps(morning_actuals),
+            incentives_text,
         )
         return self._call_and_validate(user, packet)
 
@@ -227,8 +229,8 @@ class GlmClient:
 
         rec = Recommendation.WORK if (avg > 70 and rainy_hours < 8) else Recommendation.PARTIAL
         windows = [
-            ShiftWindow(start="11:00", end="14:00", zones=["PJ", "Damansara"]),
-            ShiftWindow(start="18:00", end="22:00", zones=["Bangsar"]),
+            ShiftWindow(start="11:00", end="14:00", zones=["PJ", "Damansara"], target_app="Grab", opportunity_gain_rm=0.0),
+            ShiftWindow(start="18:00", end="22:00", zones=["Bangsar"], target_app="Grab", opportunity_gain_rm=0.0),
         ]
         return ShiftRecommendation(
             recommendation=rec,

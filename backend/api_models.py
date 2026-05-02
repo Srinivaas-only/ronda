@@ -20,7 +20,7 @@ class WeatherInput(BaseModel):
 class RecommendRequest(BaseModel):
     """What the frontend posts when the user clicks 'Get my brief'."""
     rider_name: str = Field(default="Aiman", min_length=1, max_length=50)
-    rider_platform: str = Field(default="foodpanda", max_length=30)
+    rider_platform: str = Field(default="Grab", max_length=30)
     home_zone: str = Field(default="Petaling Jaya", max_length=50)
     day_of_week: str = Field(default="Friday")
     date: str = Field(default="2026-04-25", description="YYYY-MM-DD")
@@ -36,8 +36,8 @@ class RecommendRequest(BaseModel):
     )
     incentives_text: str = Field(
         default="",
-        description="Free-text incentives (e.g. '+RM2 in Bangsar 6-10pm')",
-        max_length=500,
+        description="Multi-platform live promo data (e.g. 'ShopeeFood: +RM4 Bangsar 12-3pm; Grab: 1.2x PJ all day; FoodPanda: no promos')",
+        max_length=1000,
     )
 
 
