@@ -8,6 +8,14 @@ Built by Srinivaas, Thenesh, Teeva, Davud, and Ambrish
 
 ---
 
+## 🌐 Live Deployment
+
+- **Frontend:** https://ronda-smoky.vercel.app
+- **Backend API:** https://ronda-backend-0og9.onrender.com
+- **API Docs:** https://ronda-backend-0og9.onrender.com/docs
+
+  ---
+
 ## 📹 Pitch Video
 
 **▶️ [Watch the 10-minute pitch video here](https://drive.google.com/file/d/1s91Sx2t0eKzWxmp665ZrhS0u0Tm7kys3/view?usp=sharing)**
