@@ -76,7 +76,7 @@ const SAMPLE_BRIEF: RecommendResponse = {
     source: "glm",
   },
   meta: {
-    model: "ilmu-glm-5.1",
+    model: "glm-5.1",
     latency_seconds: 10.7,
     output_tokens: 1104,
     input_tokens: 0,
@@ -236,7 +236,7 @@ export default function RondaPage() {
 
               <div className="flex items-center justify-between border-t border-[#222] pt-5">
                 <span className="font-mono text-xs text-[#666]">
-                  ilmu-glm-5.1 &middot; ~10s
+                  GLM-5.1 &middot; ~10s
                 </span>
                 <button
                   type="submit"

@@ -24,8 +24,10 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 # Load .env BEFORE importing GlmClient so it sees the API key.
 # In production (Render), env vars are injected directly so this is a no-op.
@@ -33,7 +35,9 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 from api_models import RecommendRequest, RecommendResponse
 from context_summary import summarize_context
+from database import engine, get_db
 from glm_client import GlmClient
+from models import Base, Rider, ShiftHistory
 from prompts import SYSTEM_PROMPT, build_morning_user_prompt
 from schemas import (
     ContextPacket,
@@ -54,7 +58,10 @@ logger = logging.getLogger("ronda.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Ronda API starting up. ILMU model: %s", os.getenv("GLM_MODEL_REASONING", "ilmu-glm-5.1"))
+    logger.info("Ronda API starting up. ILMU model: %s", os.getenv("GLM_MODEL_REASONING", "glm-5.1"))
+    # Auto-create SQLite tables on first run
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables ensured.")
     yield
     logger.info("Ronda API shutting down.")
 
@@ -112,7 +119,7 @@ def root():
 def health():
     return {
         "status": "ok",
-        "model": os.getenv("GLM_MODEL_REASONING", "ilmu-glm-5.1"),
+        "model": os.getenv("GLM_MODEL_REASONING", "glm-5.1"),
         "endpoint": os.getenv("ILMU_BASE_URL", "https://api.ilmu.ai/anthropic"),
     }
 
@@ -130,7 +137,7 @@ def recommend(req: RecommendRequest):
 
     t0 = time.perf_counter()
     try:
-        client = GlmClient(model=os.getenv("GLM_MODEL_REASONING", "ilmu-glm-5.1"))
+        client = GlmClient(model=os.getenv("GLM_MODEL_REASONING", "glm-5.1"))
         rec, usage = client.recommend_morning(packet, incentives)
     except Exception as e:
         logger.exception("GLM call failed")
@@ -140,7 +147,7 @@ def recommend(req: RecommendRequest):
     return RecommendResponse(
         recommendation=rec.model_dump(),
         meta={
-            "model": os.getenv("GLM_MODEL_REASONING", "ilmu-glm-5.1"),
+            "model": os.getenv("GLM_MODEL_REASONING", "glm-5.1"),
             "latency_seconds": elapsed,
             "output_tokens": usage.output_tokens if usage else 0,
             "input_tokens": usage.input_tokens if usage else 0,
@@ -231,3 +238,95 @@ def _build_context_packet(req: RecommendRequest) -> ContextPacket:
         rider_history_relevant=history,
         recent_7day_avg_net_rm=avg,
     )
+
+
+# ─── DB Request Schemas ────────────────────────────────────────────────────
+
+class CreateRiderRequest(BaseModel):
+    name: str
+    baseline_average_rm: float = 0.0
+
+
+class CreateShiftRequest(BaseModel):
+    rider_id: int
+    date: str
+    recommended_app: str = ""
+    actual_earnings_rm: float = 0.0
+    weather_condition: str = ""
+
+
+# ─── DB Endpoints ──────────────────────────────────────────────────────────
+
+@app.get("/api/riders")
+def list_riders(db: Session = Depends(get_db)):
+    """List all riders."""
+    riders = db.query(Rider).all()
+    return [
+        {
+            "id": r.id,
+            "name": r.name,
+            "baseline_average_rm": r.baseline_average_rm,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in riders
+    ]
+
+
+@app.post("/api/riders")
+def create_rider(req: CreateRiderRequest, db: Session = Depends(get_db)):
+    """Create a new rider (for demo / onboarding)."""
+    rider = Rider(name=req.name, baseline_average_rm=req.baseline_average_rm)
+    db.add(rider)
+    db.commit()
+    db.refresh(rider)
+    logger.info("Created rider: id=%s name=%s", rider.id, rider.name)
+    return {
+        "id": rider.id,
+        "name": rider.name,
+        "baseline_average_rm": rider.baseline_average_rm,
+        "created_at": rider.created_at.isoformat(),
+    }
+
+
+@app.get("/api/shifts")
+def list_shifts(db: Session = Depends(get_db)):
+    """List all shift history records."""
+    shifts = db.query(ShiftHistory).all()
+    return [
+        {
+            "id": s.id,
+            "rider_id": s.rider_id,
+            "date": s.date,
+            "recommended_app": s.recommended_app,
+            "actual_earnings_rm": s.actual_earnings_rm,
+            "weather_condition": s.weather_condition,
+        }
+        for s in shifts
+    ]
+
+
+@app.post("/api/shifts")
+def create_shift(req: CreateShiftRequest, db: Session = Depends(get_db)):
+    """Save a shift result after a recommendation."""
+    rider = db.query(Rider).filter(Rider.id == req.rider_id).first()
+    if not rider:
+        raise HTTPException(status_code=404, detail=f"Rider {req.rider_id} not found")
+    shift = ShiftHistory(
+        rider_id=req.rider_id,
+        date=req.date,
+        recommended_app=req.recommended_app,
+        actual_earnings_rm=req.actual_earnings_rm,
+        weather_condition=req.weather_condition,
+    )
+    db.add(shift)
+    db.commit()
+    db.refresh(shift)
+    logger.info("Saved shift: id=%s rider=%s date=%s", shift.id, req.rider_id, req.date)
+    return {
+        "id": shift.id,
+        "rider_id": shift.rider_id,
+        "date": shift.date,
+        "recommended_app": shift.recommended_app,
+        "actual_earnings_rm": shift.actual_earnings_rm,
+        "weather_condition": shift.weather_condition,
+    }

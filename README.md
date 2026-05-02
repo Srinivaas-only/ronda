@@ -83,7 +83,23 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000
+ Open http://localhost:3000
+
+### Database
+
+Ronda uses **SQLite** (zero-config, file-based). The database is auto-created as `backend/ronda.db` on first server startup. It stores rider profiles and shift history.
+
+**View the database:**
+1. **Swagger UI (easiest):** Open `http://localhost:8000/docs` and use the interactive API docs to `GET /api/riders`, `POST /api/riders`, `GET /api/shifts`, `POST /api/shifts`
+2. **VS Code:** Install the *SQLite Viewer* extension, then click on `backend/ronda.db` in the file explorer
+3. **Command line:**
+   ```bash
+   cd backend
+   python -c "from database import engine; import pandas as pd; print(pd.read_sql('SELECT * FROM riders', engine))"
+   ```
+4. **GUI app:** Download [DB Browser for SQLite](https://sqlitebrowser.org/) and open `backend/ronda.db`
+
+> **Note:** `ronda.db` is gitignored (`*.db` in `.gitignore`) — it won't be committed.
 
 ---
 
