@@ -1,7 +1,7 @@
 # Ronda
 
-> **An AI shift coach for Malaysian gig riders.**
-> Powered by GLM-5.1.
+> **A high-frequency earnings optimizer for Malaysian gig riders.**
+> Platform Arbitrage powered by GLM-5.1 via Z.AI.
 
 UMHackathon 2026 · Domain 2: AI for Economic Empowerment & Decision Intelligence
 Built by Srinivaas, Thenesh, Teeva, Davud, and Ambrish
@@ -10,11 +10,29 @@ Built by Srinivaas, Thenesh, Teeva, Davud, and Ambrish
 
 ## 🌐 Live Deployment
 
-- **Frontend:** https://ronda-bice.vercel.app
-- **Backend API:** https://ronda-backend-0og9.onrender.com
-- **API Docs:** https://ronda-backend-0og9.onrender.com/docs
+| | URL |
+|---|---|
+| **Frontend** | https://ronda-bice.vercel.app |
+| **Backend API** | https://ronda-backend-0og9.onrender.com |
+| **API Docs (Swagger)** | https://ronda-backend-0og9.onrender.com/docs |
 
-  ---
+---
+
+## 📂 Submission Documents (Final Round)
+
+| Document | Link |
+|---|---|
+| **Business Proposal** | [Google Drive — PDF](https://drive.google.com/file/d/1TtV4bk4pBmrLAwb1ShG5KaGwzTSFAF6A/view?usp=drive_link) |
+| **Deployment Plan** | [Google Drive — PDF](https://drive.google.com/file/d/146JBQJN_0S7DnTSWFHiICi6FMIsixQ1P/view?usp=drive_link) |
+| **Refined QATD** | [Google Drive — PDF](https://drive.google.com/file/d/1mgqelBmXFJIyjnrxRwdEAhoiVF3tVwsO/view?usp=drive_link) |
+| **Pitch Deck** | [Google Drive — PDF](https://docs.google.com/presentation/d/1v4SgWWwqa8PWsmJx_Rmq6SuCHz4HyKQ4/edit?usp=drive_link&ouid=108907224758138981478&rtpof=true&sd=true) |
+| **PRD (Preliminary)** | [`docs/UMHackathon2026_Ronda_PRD_1.pdf`](docs/UMHackathon2026_Ronda_PRD_1.pdf) |
+| **SAD (Preliminary)** | [`docs/UMHackathon2026_Ronda_SAD_1.pdf`](docs/UMHackathon2026_Ronda_SAD_1.pdf) |
+| **QATD (Preliminary)** | [`docs/UMHackathon2026_Ronda_QATD_1.pdf`](docs/UMHackathon2026_Ronda_QATD_1.pdf) |
+
+> **To add your Google Drive links:** Upload each PDF to Google Drive → Right-click → Share → "Anyone with the link" → Copy link → Replace `YOUR_GDRIVE_LINK_HERE` above.
+
+---
 
 ## 📹 Pitch Video
 
@@ -24,19 +42,22 @@ Built by Srinivaas, Thenesh, Teeva, Davud, and Ambrish
 
 ---
 
-## 📂 Submission Documents
-
-All required submission documents (PRD, SAD, QATD, Pitch Deck) are in the **`/docs`** folder of this repository. Navigate there to view or download the PDFs.
-
----
-
 ## What Ronda does
 
-Every morning, hundreds of thousands of Malaysian gig workers face the same decision: should I work today, where, and when? The data they need is fragmented across five different places — weather apps, the platform's incentive bulletin, news feeds for events, fuel-price tickers, and their own earnings history. No tool synthesises them.
+Every morning, hundreds of thousands of Malaysian gig workers face the same decision: should I work today, where, and when? The data they need is fragmented across five different places — weather apps, platform incentive bulletins, news feeds for events, fuel-price tickers, and their own earnings history. No tool synthesises them. Worse, no tool compares across platforms.
 
-Ronda is a single-screen web application that takes a rider's context and produces a structured shift recommendation in approximately 10 seconds. The reasoning engine is **ILMU-GLM-5.1** (Z.AI / YTL AI Labs), accessed via the Anthropic-compatible API surface at `api.ilmu.ai/anthropic`. The output is a verdict (work / rest / partial), shift windows with zones, projected net earnings after petrol, a Malaysian-English narrative, ranked key factors, and explicit caveats.
+Ronda is a high-frequency earnings optimizer that takes a rider's context and produces a structured shift recommendation in approximately 10 seconds. The core innovation is **Platform Arbitrage** — comparing live voucher drops, incentive boosts, and surge windows across Grab, ShopeeFood, and Foodpanda to tell riders exactly *when* and *where* to switch apps for maximum RM per hour.
 
-A side-by-side comparison view at `/compare` demonstrates that removing GLM degrades the system to a generic rules engine that cannot read events, weight incentives, or calibrate confidence.
+The reasoning engine is **GLM-5.1** (Z.AI), accessed via the Anthropic-compatible API surface at `api.z.ai/api/anthropic`. The output includes:
+
+- A verdict (work / rest / partial)
+- Shift windows with **target app** (Grab / ShopeeFood / FoodPanda) and **opportunity gain** per window
+- Projected net earnings after petrol
+- A Malaysian-English narrative naming the Switch Window explicitly
+- Ranked key factors with impact weights
+- Explicit caveats with confidence calibration
+
+A side-by-side comparison view at `/compare` demonstrates that removing GLM degrades the system to a generic rules engine that cannot read events, compare platforms, weight incentives, or calibrate confidence.
 
 ---
 
@@ -50,12 +71,13 @@ Browser (Next.js 16, React 19, Tailwind v4, TypeScript)
 Backend (FastAPI, Python 3.14, Pydantic v2)
     │   - Input validation
     │   - Context summariser (3,200 → 350 chars)
-    │   - Prompt builder
+    │   - Platform Arbitrage prompt builder
     │   - 3-tier fallback chain
+    │   - SQLite (rider profiles + shift history)
     │
     ▼   Anthropic-compatible API · streaming preferred
     │
-ILMU-GLM-5.1 (api.ilmu.ai/anthropic)
+GLM-5.1 (api.z.ai/api/anthropic)
 ```
 
 ### Three-tier fallback chain
@@ -72,7 +94,7 @@ ILMU-GLM-5.1 (api.ilmu.ai/anthropic)
 ```bash
 cd backend
 pip install -r requirements.txt
-cp .env.example .env   # then edit .env to add ILMU_API_KEY
+cp .env.example .env   # then edit .env to add your Z.AI API key
 uvicorn main:app --reload --port 8000
 ```
 
@@ -83,23 +105,27 @@ npm install
 npm run dev
 ```
 
- Open http://localhost:3000
+Open http://localhost:3000
 
 ### Database
 
-Ronda uses **SQLite** (zero-config, file-based). The database is auto-created as `backend/ronda.db` on first server startup. It stores rider profiles and shift history.
+Ronda uses **SQLite** (zero-config, file-based). The database is auto-created as `backend/ronda.db` on first server startup via the FastAPI lifespan hook. It stores rider profiles and shift history via SQLAlchemy ORM.
 
 **View the database:**
-1. **Swagger UI (easiest):** Open `http://localhost:8000/docs` and use the interactive API docs to `GET /api/riders`, `POST /api/riders`, `GET /api/shifts`, `POST /api/shifts`
-2. **VS Code:** Install the *SQLite Viewer* extension, then click on `backend/ronda.db` in the file explorer
-3. **Command line:**
-   ```bash
-   cd backend
-   python -c "from database import engine; import pandas as pd; print(pd.read_sql('SELECT * FROM riders', engine))"
-   ```
-4. **GUI app:** Download [DB Browser for SQLite](https://sqlitebrowser.org/) and open `backend/ronda.db`
+- **Swagger UI (easiest):** Open `http://localhost:8000/docs` and use `GET /api/riders`, `POST /api/riders`, `GET /api/shifts`, `POST /api/shifts`
+- **VS Code:** Install the *SQLite Viewer* extension, then click on `backend/ronda.db`
+- **DB Browser:** Download [DB Browser for SQLite](https://sqlitebrowser.org/) and open `backend/ronda.db`
 
-> **Note:** `ronda.db` is gitignored (`*.db` in `.gitignore`) — it won't be committed.
+> `ronda.db` is gitignored — it won't be committed.
+
+### Environment variables
+
+| Variable | Description | Example |
+|---|---|---|
+| `ILMU_API_KEY` | Z.AI API key for GLM-5.1 | `sk-...` |
+| `ANTHROPIC_BASE_URL` | API endpoint (default: `https://api.z.ai/api/anthropic`) | `https://api.z.ai/api/anthropic` |
+| `GLM_MODEL_REASONING` | Model string (default: `ilmu-glm-5.1`) | `ilmu-glm-5.1` |
+| `FRONTEND_ORIGINS` | Comma-separated CORS origins | `http://localhost:3000,https://ronda-bice.vercel.app` |
 
 ---
 
@@ -108,9 +134,11 @@ Ronda uses **SQLite** (zero-config, file-based). The database is auto-created as
 | Layer | Technology |
 |---|---|
 | **Frontend** | Next.js 16 (App Router, Turbopack) · React 19 · Tailwind v4 · TypeScript · shadcn/ui |
-| **Backend** | Python 3.14 · FastAPI · uvicorn · Pydantic v2 · anthropic SDK |
-| **Reasoning** | ILMU-GLM-5.1 via api.ilmu.ai/anthropic |
-| **CI** | GitHub Actions (lint + Pydantic schema tests) |
+| **Backend** | Python 3.14 · FastAPI · uvicorn · Pydantic v2 · anthropic SDK · SQLAlchemy |
+| **Database** | SQLite (auto-created, zero-config) |
+| **Reasoning** | GLM-5.1 via Z.AI (`api.z.ai/api/anthropic`) |
+| **CI** | GitHub Actions (ruff lint + Pydantic schema tests) |
+| **Deployment** | Frontend: Vercel · Backend: Render (Singapore) |
 | **Fonts** | Instrument Serif · IBM Plex Mono · IBM Plex Sans |
 
 ---
@@ -121,11 +149,10 @@ Every number from a live GLM call:
 
 | Metric | Value |
 |---|---|
-| Median latency (p50) | 12s |
-| 95th percentile latency | 25s |
-| Output tokens per call | ~1,200 |
-| Prompt size after compression | 750 chars |
-| Quota headroom | 16,000 recommendations |
+| End-to-end latency | 10–25s (median 12s, p95 25s) |
+| Output tokens per call | 1,000–1,200 |
+| Prompt size after compression | ~750 chars |
+| Quota headroom | ~16,000 recommendations (hackathon 50M-token quota) |
 | Schema pass rate (first try) | 100% |
 
 ---
@@ -135,9 +162,11 @@ Every number from a live GLM call:
 | Constraint | Fix |
 |---|---|
 | Cloudflare 504s on verbose JSON | Context summariser compresses 3,200-char ContextPackets → 350-char paragraphs. Latency: 504 → 10s |
-| ILMU streaming drops mid-response | Three-tier fallback: stream → non-stream → rule-based, with source flag exposed to UI |
+| Streaming drops mid-response | Three-tier fallback: stream → non-stream → rule-based, with source flag exposed to UI |
 | GLM-5.1 returns content in non-text blocks | Read from final message instead of streamed text iterator |
 | Schema drift in GLM output | Pydantic validation + one corrective retry feeding the validation error back to GLM |
+| CORS blocking Vercel → Render | `FRONTEND_ORIGINS` env var + `*.vercel.app` regex pattern |
+| Auth error after key migration | `ANTHROPIC_BASE_URL` → `ILMU_BASE_URL` fallback chain in env var reading |
 
 ---
 
@@ -145,7 +174,7 @@ Every number from a live GLM call:
 
 | Member | Role | Primary contribution |
 |---|---|---|
-| **Srinivaas** | Backend & ML Integration Lead | FastAPI service, ILMU-GLM-5.1 client with streaming + non-streaming + rule-based fallback, Pydantic schema enforcement, context summariser, synthetic data generator, Cloudflare timeout diagnosis & resolution |
+| **Srinivaas** | Backend & ML Integration Lead | FastAPI service, GLM-5.1 client with streaming + non-streaming + rule-based fallback, Pydantic schema enforcement, context summariser, Platform Arbitrage prompt engineering, SQLite database, Cloudflare timeout diagnosis & resolution |
 | **Thenesh** | Frontend Engineering | Next.js 16 + Tailwind v4 implementation, side-by-side form layout, custom dropdown component, trace panel, comparison view routing, mobile responsiveness, dark-mode wiring |
 | **Teeva** | UI/UX Design & Brand | Editorial visual system (Instrument Serif + IBM Plex Mono), colour palette, dark-cream tonal range, typographic hierarchy, brand voice, pitch deck visual direction |
 | **Davud** | Quality Assurance & Documentation | Test scenario design, risk-assessment matrix, prompt/response validation pairs, hallucination handling tests, quality assurance documentation, CI workflow definition, edge-case scripting |
@@ -158,34 +187,54 @@ Every number from a live GLM call:
 ```
 ronda/
 ├── README.md                           ← you are here
-├── docs/                               ← all submission documents
-│   ├── UMHackathon2026_Ronda_PRD.pdf
-│   ├── UMHackathon2026_Ronda_SAD.pdf
-│   ├── UMHackathon2026_Ronda_QATD.pdf
+├── docs/                               ← submission documents
+│   ├── UMHackathon2026_Ronda_PRD_1.pdf
+│   ├── UMHackathon2026_Ronda_SAD_1.pdf
+│   ├── UMHackathon2026_Ronda_QATD_1.pdf
+│   ├── UMHackathon2026_Ronda_BusinessProposal.pdf
 │   └── UMHackathon2026_Ronda_PitchDeck.pdf
 ├── backend/                            ← FastAPI + GLM-5.1 client
-│   ├── main.py
-│   ├── api_models.py
-│   ├── schemas.py
-│   ├── glm_client.py
-│   ├── context_summary.py
-│   ├── prompts.py
+│   ├── main.py                         HTTP, CORS, /api/recommend, /api/health, rider/shift CRUD
+│   ├── glm_client.py                   3-tier GLM orchestration + schema retry
+│   ├── schemas.py                      ShiftRecommendation, ContextPacket (Pydantic v2)
+│   ├── api_models.py                   Request/response models for /api/recommend
+│   ├── context_summary.py              ContextPacket → 350-char paragraph
+│   ├── prompts.py                      Platform Arbitrage system + user prompts
+│   ├── database.py                     SQLite engine + session factory (SQLAlchemy)
+│   ├── models.py                       Rider + ShiftHistory ORM models
+│   ├── see_glm.py                      Quick GLM smoke test script
 │   ├── data/
-│   │   ├── aiman_history.csv
-│   │   └── synthetic_generator.py
+│   │   ├── aiman_history.csv           655-row synthetic rider history
+│   │   └── synthetic_generator.py      History data generator
+│   ├── scripts/
+│   │   ├── measure.py                  Latency measurement script
+│   │   ├── probe_models.py             Model availability checker
+│   │   ├── probe_sizes.py              Prompt size testing
+│   │   └── see_raw.py                  Raw GLM response inspector
+│   ├── tests/
+│   │   ├── test_schemas.py             6 unit tests (Pydantic schema validation)
+│   │   └── test_glm_client.py          GLM client integration tests
 │   └── requirements.txt
-└── frontend/Ronda/                     ← Next.js 16 application
-    ├── app/
-    │   ├── page.tsx                    ← morning brief view
-    │   └── compare/page.tsx            ← GLM vs rules comparison
-    ├── lib/
-    │   ├── api.ts
-    │   ├── types.ts
-    │   ├── compare-data.ts
-    │   └── demo-data.ts
-    └── package.json
+├── frontend/Ronda/                     ← Next.js 16 application
+│   ├── app/
+│   │   ├── page.tsx                    Morning brief view (form + verdict + narrative)
+│   │   ├── compare/page.tsx            GLM vs rules side-by-side comparison
+│   │   ├── layout.tsx                  Root layout + font loading
+│   │   └── globals.css                 Tailwind v4 config + design tokens
+│   ├── components/
+│   │   ├── theme-provider.tsx          Dark mode provider
+│   │   └── ui/                         shadcn/ui primitives (alert, badge, button, card, progress, separator)
+│   ├── lib/
+│   │   ├── api.ts                      API client (POST /api/recommend)
+│   │   ├── types.ts                    TypeScript types mirroring Pydantic schema
+│   │   ├── compare-data.ts             Pre-canned GLM vs rules scenarios
+│   │   ├── demo-data.ts                Sample brief for offline demo
+│   │   └── utils.ts                    Tailwind merge utility
+│   └── package.json
+└── .github/workflows/
+    └── ci.yml                          Ruff lint + pytest on every push
 ```
 
 ---
 
-© UMHackathon 2026 · Ronda
+© UMHackathon 2026 · Ronda · Powered by GLM-5.1 via Z.AI
