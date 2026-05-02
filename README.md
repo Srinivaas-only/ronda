@@ -1,7 +1,7 @@
 # Ronda
 
 > **An AI shift coach for Malaysian gig riders.**
-> Powered by ILMU-GLM-5.1.
+> Powered by GLM-5.1.
 
 UMHackathon 2026 · Domain 2: AI for Economic Empowerment & Decision Intelligence
 Built by Srinivaas, Thenesh, Teeva, Davud, and Ambrish
@@ -163,7 +163,7 @@ ronda/
 │   ├── UMHackathon2026_Ronda_SAD.pdf
 │   ├── UMHackathon2026_Ronda_QATD.pdf
 │   └── UMHackathon2026_Ronda_PitchDeck.pdf
-├── backend/                            ← FastAPI + ILMU-GLM-5.1 client
+├── backend/                            ← FastAPI + GLM-5.1 client
 │   ├── main.py
 │   ├── api_models.py
 │   ├── schemas.py
