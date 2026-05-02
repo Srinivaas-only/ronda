@@ -42,7 +42,7 @@ from schemas import (
 logger = logging.getLogger(__name__)
 
 ILMU_API_KEY = os.getenv("ILMU_API_KEY", "") or os.getenv("ANTHROPIC_AUTH_TOKEN", "")
-ILMU_BASE_URL = os.getenv("ILMU_BASE_URL", "https://api.ilmu.ai/anthropic")
+ILMU_BASE_URL = os.getenv("ANTHROPIC_BASE_URL", os.getenv("ILMU_BASE_URL", "https://api.z.ai/api/anthropic"))
 GLM_MODEL_REASONING = os.getenv("GLM_MODEL_REASONING", "ilmu-glm-5.1")
 GLM_MODEL_CHEAP = os.getenv("GLM_MODEL_CHEAP", "ilmu-glm-5.1")
 
