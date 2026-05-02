@@ -22,10 +22,10 @@ Built by Srinivaas, Thenesh, Teeva, Davud, and Ambrish
 
 | Document | Link |
 |---|---|
-| **Business Proposal** | [Google Drive — PDF](https://drive.google.com/file/d/1TtV4bk4pBmrLAwb1ShG5KaGwzTSFAF6A/view?usp=drive_link) |
-| **Deployment Plan** | [Google Drive — PDF](https://drive.google.com/file/d/146JBQJN_0S7DnTSWFHiICi6FMIsixQ1P/view?usp=drive_link) |
-| **Refined QATD** | [Google Drive — PDF](https://drive.google.com/file/d/1mgqelBmXFJIyjnrxRwdEAhoiVF3tVwsO/view?usp=drive_link) |
-| **Pitch Deck** | [Google Drive — PDF](https://docs.google.com/presentation/d/1v4SgWWwqa8PWsmJx_Rmq6SuCHz4HyKQ4/edit?usp=drive_link&ouid=108907224758138981478&rtpof=true&sd=true) |
+| **Business Proposal** | [Google Drive — PDF](https://drive.google.com/file/d/1lU5exMjYFJpCBn21UVbq0lm7I6ecvc4l/view?usp=drive_link) |
+| **Deployment Plan** | [Google Drive — PDF](https://drive.google.com/file/d/1SC7daZhmu_9BjpmNoPtVYzOreS0D9NiW/view?usp=drive_link) |
+| **Refined QATD** | [Google Drive — PDF](https://drive.google.com/file/d/1Q8D_fUbzVVlqNMnWF04Jh7Y15X_i6zId/view?usp=drive_link) |
+| **Pitch Deck** | [Google Drive — PDF](https://drive.google.com/file/d/12LuhHeieL9CCxQMqUbMejcwwvgMGkw7L/view?usp=drive_link) |
 | **PRD (Preliminary)** | [`docs/UMHackathon2026_Ronda_PRD_1.pdf`](docs/UMHackathon2026_Ronda_PRD_1.pdf) |
 | **SAD (Preliminary)** | [`docs/UMHackathon2026_Ronda_SAD_1.pdf`](docs/UMHackathon2026_Ronda_SAD_1.pdf) |
 | **QATD (Preliminary)** | [`docs/UMHackathon2026_Ronda_QATD_1.pdf`](docs/UMHackathon2026_Ronda_QATD_1.pdf) |
