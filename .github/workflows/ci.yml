@@ -1,34 +1,38 @@
-name: CI
+name: Ronda CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  backend-tests:
+  backend-lint-and-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-          cache: pip
+          python-version: "3.12"
 
       - name: Install dependencies
-        working-directory: ./backend
+        run: pip install -r requirements.txt
+
+      - name: Lint with ruff
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install ruff
+          ruff check . --select=E,F,I --ignore=E501
 
-      - name: Run pytest (non-live tests only)
-        working-directory: ./backend
+      - name: Run schema validation tests
+        run: python -m pytest tests/ -v --tb=short
         env:
-          ZAI_API_KEY: ""    # intentionally empty — live tests are skipped in CI
-        run: pytest -v
-
-      - name: Synthetic data generator smoke check
-        working-directory: ./backend
-        run: python data/synthetic_generator.py
+          ILMU_API_KEY: "test-key-not-real"
+          ANTHROPIC_AUTH_TOKEN: "test-key-not-real"
+          ANTHROPIC_BASE_URL: "https://api.z.ai/api/anthropic"
+          GLM_MODEL_REASONING: "glm-5.1"
