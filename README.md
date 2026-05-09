@@ -30,8 +30,6 @@ Built by Srinivaas, Thenesh, Teeva, Davud, and Ambrish
 | **SAD (Preliminary)** | [`docs/UMHackathon2026_Ronda_SAD_1.pdf`](docs/UMHackathon2026_Ronda_SAD_1.pdf) |
 | **QATD (Preliminary)** | [`docs/UMHackathon2026_Ronda_QATD_1.pdf`](docs/UMHackathon2026_Ronda_QATD_1.pdf) |
 
-> **To add your Google Drive links:** Upload each PDF to Google Drive → Right-click → Share → "Anyone with the link" → Copy link → Replace `YOUR_GDRIVE_LINK_HERE` above.
-
 ---
 
 ## 📹 Pitch Video
