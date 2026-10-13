@@ -3,12 +3,24 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  ChartNoAxesCombined,
+  CloudRain,
+  MapPin,
+  Sparkles,
+  TicketPercent,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import {
   defaultRequest,
   getRecommendation,
   type RecommendRequest,
   type RecommendResponse,
 } from "@/lib/api";
-import type { Confidence, Impact, Weight, ShiftWindow } from "@/lib/types";
+import type { Confidence, Weight, ShiftWindow } from "@/lib/types";
 
 const VERDICT_LABEL: Record<string, string> = {
   work: "RIDE TODAY",
@@ -28,20 +40,14 @@ const CONFIDENCE_LABEL: Record<Confidence, string> = {
   low: "Low confidence",
 };
 
-const IMPACT_GLYPH: Record<Impact, string> = {
-  positive: "▲",
-  negative: "▼",
-  neutral: "▪",
-};
-
 const WEIGHT_DOT: Record<Weight, string> = {
   high: "●●●",
   medium: "●●○",
   low: "●○○",
 };
 
-const NEON = "#CCFF00";
-const ALERT_RED = "#FF3B3B";
+const NEON = "#C7F43D";
+const ALERT_RED = "#FF5C5C";
 
 type ViewState =
   | { kind: "idle" }
@@ -114,32 +120,34 @@ export default function RondaPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-[#f0f0f0]">
-      <div className="mx-auto max-w-7xl px-6 py-8 sm:px-10 sm:py-12">
+    <main className="min-h-screen bg-[#090a0a] text-[#f4f5f1]">
+      <div className="mx-auto max-w-[1440px] px-4 py-4 sm:px-8 sm:py-7 xl:px-12">
         {/* Header */}
-        <div className="mb-10 flex items-center justify-between border-b border-[#222] pb-5">
-          <div className="flex items-baseline gap-3">
+        <div className="mb-6 flex items-center justify-between border-b border-[#242625] pb-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#C7F43D] font-serif text-lg italic text-black">R</span>
             <span className="font-serif text-xl italic text-white">Ronda</span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">
+            <span className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-[#929690] sm:inline">
               Shift Coach &middot; Live Arbitrage
             </span>
           </div>
           <Link
             href="/compare"
-            className="font-mono text-[10px] uppercase tracking-[0.25em] hover:underline"
+            className="rounded-md px-2 py-2 font-mono text-[10px] uppercase tracking-[0.16em] underline-offset-4 transition-colors hover:bg-[#171918] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C7F43D]"
             style={{ color: NEON }}
           >
             with vs without GLM &rarr;
           </Link>
         </div>
 
-        <div className="grid gap-12 lg:grid-cols-[5fr_8fr] lg:gap-16">
+        <div className="grid gap-6 lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)] xl:gap-8">
           {/* LEFT: Form */}
-          <aside className="lg:sticky lg:top-8 lg:self-start">
-            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">
-              Right now
-            </p>
-            <h1 className="mt-2 font-serif text-3xl font-normal italic leading-tight tracking-tight text-white">
+          <aside className="rounded-2xl border border-[#242625] bg-[#111312] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)] sm:p-6 lg:sticky lg:top-6 lg:self-start">
+            <div className="mb-5 flex items-center justify-between">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#9ca19a]">Plan your shift</p>
+              <span className="flex items-center gap-1.5 rounded-full bg-[#C7F43D]/10 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-[#C7F43D]"><Activity size={11} /> Live signals</span>
+            </div>
+            <h1 className="font-serif text-4xl font-normal italic leading-[0.98] tracking-[-0.03em] text-white">
               Stop guessing. Start earning.
             </h1>
             <p className="mt-3 text-[14px] leading-relaxed text-[#999]">
@@ -148,7 +156,7 @@ export default function RondaPage() {
 
             <form
               onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
-              className="mt-8 space-y-7"
+              className="mt-7 space-y-7"
             >
               <Group label="Rider">
                 <UnderlineField label="Name">
@@ -234,17 +242,17 @@ export default function RondaPage() {
                 </UnderlineField>
               </Group>
 
-              <div className="flex items-center justify-between border-t border-[#222] pt-5">
+              <div className="flex items-center justify-between border-t border-[#292c2a] pt-5">
                 <span className="font-mono text-xs text-[#666]">
                   GLM-5.1 &middot; ~10s
                 </span>
                 <button
                   type="submit"
                   disabled={view.kind === "loading"}
-                  className="rounded-md px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-black transition-all hover:brightness-110 disabled:opacity-40"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-lg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-black shadow-[0_8px_22px_rgba(199,244,61,0.14)] transition-[transform,filter,opacity] hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:translate-y-0 disabled:opacity-40"
                   style={{ backgroundColor: NEON }}
                 >
-                  {view.kind === "loading" ? "Thinking\u2026" : "Coach Me \u2192"}
+                  {view.kind === "loading" ? "Thinking\u2026" : <>Coach me <ArrowRight size={14} /></>}
                 </button>
               </div>
             </form>
@@ -255,7 +263,7 @@ export default function RondaPage() {
             {view.kind === "loading" && <LoadingState />}
             {view.kind === "error" && <ErrorState message={view.message} />}
             {view.kind === "result" && <Brief data={view.data} form={form} />}
-            {view.kind === "idle" && <div className="opacity-50 text-[#888]">Click "Coach Me" to begin.</div>}
+            {view.kind === "idle" && <div className="opacity-50 text-[#888]">Click &ldquo;Coach Me&rdquo; to begin.</div>}
           </section>
         </div>
       </div>
@@ -270,7 +278,7 @@ function ProfitDial({ net, avg }: { net: number; avg: number }) {
   const pct = Math.min(100, Math.round((net / cap) * 100));
   const barColor = pct >= 70 ? NEON : pct >= 40 ? "#FFA500" : ALERT_RED;
   return (
-    <div className="rounded-xl border border-[#222] bg-[#111] p-5">
+    <div className="rounded-2xl bg-[#151716] p-5">
       <div className="flex items-center justify-between mb-3">
         <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">
           Earnings Potential
@@ -279,7 +287,7 @@ function ProfitDial({ net, avg }: { net: number; avg: number }) {
           {pct}%
         </span>
       </div>
-      <div className="h-3 w-full rounded-full bg-[#1a1a1a] overflow-hidden">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-[#242725]">
         <div
           className="h-full rounded-full transition-all duration-700"
           style={{ width: `${pct}%`, backgroundColor: barColor }}
@@ -297,24 +305,24 @@ function SwitchLogicCard({ windows, currentPlatform }: { windows: ShiftWindow[];
   if (switchWindows.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-[#222] bg-[#111] p-5">
-      <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888] mb-4">
-        {"\uD83D\uDD00"} Your Shift Coach says: SWITCH NOW
+    <div className="rounded-2xl bg-[#151716] p-5">
+      <p className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#C7F43D]">
+        <Sparkles size={13} /> Your Shift Coach says: switch now
       </p>
       {switchWindows.map((w, i) => (
         <div key={i} className="flex items-center gap-4 mb-3 last:mb-0">
-          <div className="flex-1 rounded-lg border border-[#333] bg-[#1a1a1a] p-3 text-center">
+          <div className="flex-1 rounded-xl bg-[#202321] p-3 text-center">
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#888]">Current</p>
             <p className="font-mono text-lg font-bold text-white mt-1">{currentPlatform}</p>
             <p className="font-mono text-[10px] text-[#666] mt-1">{w.start} &mdash; {w.end}</p>
           </div>
           <div className="flex flex-col items-center">
-            <span className="text-xl" style={{ color: NEON }}>&rarr;</span>
+            <ArrowRight size={20} style={{ color: NEON }} />
             <span className="font-mono text-[10px] font-bold mt-1" style={{ color: NEON }}>
               +RM{w.opportunity_gain_rm?.toFixed(0)}
             </span>
           </div>
-          <div className="flex-1 rounded-lg p-3 text-center" style={{ borderColor: NEON, borderWidth: 1, backgroundColor: `${NEON}10` }}>
+          <div className="flex-1 rounded-xl p-3 text-center" style={{ backgroundColor: `${NEON}12` }}>
             <p className="font-mono text-[9px] uppercase tracking-[0.2em]" style={{ color: NEON }}>Switch to</p>
             <p className="font-mono text-lg font-bold mt-1" style={{ color: NEON }}>{w.target_app}</p>
             <p className="font-mono text-[10px] text-[#999] mt-1">{w.zones.join(" \u00B7 ")}</p>
@@ -332,8 +340,8 @@ function OpportunityCost({ windows, currentPlatform }: { windows: ShiftWindow[];
   if (totalGain <= 0) return null;
 
   return (
-    <div className="rounded-xl border p-4 flex items-center gap-4" style={{ borderColor: `${ALERT_RED}40`, backgroundColor: `${ALERT_RED}10` }}>
-      <span className="text-2xl">{"\u26A0\uFE0F"}</span>
+    <div className="flex items-center gap-4 rounded-2xl p-4" style={{ backgroundColor: `${ALERT_RED}12` }}>
+      <AlertTriangle size={22} className="shrink-0" style={{ color: ALERT_RED }} />
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: ALERT_RED }}>
           Opportunity Cost
@@ -351,23 +359,23 @@ function OpportunityCost({ windows, currentPlatform }: { windows: ShiftWindow[];
 
 function LivePulse({ factors }: { factors: { factor: string; impact: string; weight: string; note?: string }[] }) {
   const triggers = factors.map((f) => {
-    let icon = "\uD83D\uDCCA";
-    let label = f.factor;
+    let Icon = ChartNoAxesCombined;
+    const label = f.factor;
     if (f.factor.toLowerCase().includes("rain") || f.factor.toLowerCase().includes("weather")) {
-      icon = "\uD83C\uDF27\uFE0F";
+      Icon = CloudRain;
     } else if (f.factor.toLowerCase().includes("grand prix") || f.factor.toLowerCase().includes("bukit jalil") || f.factor.toLowerCase().includes("concert") || f.factor.toLowerCase().includes("fan zone")) {
-      icon = "\uD83C\uDFDF\uFE0F";
+      Icon = MapPin;
     } else if (f.factor.toLowerCase().includes("voucher") || f.factor.toLowerCase().includes("boost") || f.factor.toLowerCase().includes("incentive") || f.factor.toLowerCase().includes("shopee") || f.factor.toLowerCase().includes("grab")) {
-      icon = "\uD83D\uDCB0";
+      Icon = TicketPercent;
     }
     const shortLabel = f.note
       ? (f.note.length > 50 ? f.note.slice(0, 50) + "\u2026" : f.note)
       : label;
-    return { icon, label, shortLabel, impact: f.impact, weight: f.weight };
+    return { Icon, label, shortLabel, impact: f.impact, weight: f.weight };
   });
 
   return (
-    <div className="rounded-xl border border-[#222] bg-[#111] p-5">
+    <div className="rounded-2xl bg-[#151716] p-5">
       <div className="flex items-center gap-2 mb-4">
         <span className="relative flex h-2.5 w-2.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: NEON }} />
@@ -381,9 +389,9 @@ function LivePulse({ factors }: { factors: { factor: string; impact: string; wei
         {triggers.map((t, i) => (
           <div
             key={i}
-            className="rounded-lg border border-[#222] bg-[#1a1a1a] px-3 py-2 flex items-center gap-2"
+            className="flex items-center gap-2 rounded-lg bg-[#202321] px-3 py-2"
           >
-            <span className="text-sm">{t.icon}</span>
+            <t.Icon size={14} className="text-[#9ca19a]" />
             <span className="font-mono text-[11px] text-[#ccc]">{t.shortLabel}</span>
             <span
               className="font-mono text-[9px] uppercase font-bold"
@@ -415,9 +423,9 @@ function VoucherSniper({ incentivesText }: { incentivesText: string }) {
   });
 
   return (
-    <div className="rounded-xl border border-[#222] bg-[#111] p-5">
-      <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888] mb-4">
-        {"\uD83C\uDFAF"} Voucher Sniper &mdash; Flash Promos & Order Spikes
+    <div className="rounded-2xl bg-[#151716] p-5">
+      <p className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#9ca19a]">
+        <TicketPercent size={13} /> Voucher Sniper &mdash; Flash Promos & Order Spikes
       </p>
       <div className="grid gap-2 sm:grid-cols-3">
         {vouchers.map((v, i) => (
@@ -444,7 +452,7 @@ function VoucherSniper({ incentivesText }: { incentivesText: string }) {
               </span>
               {v.active && v.hasBonus && (
                 <span className="rounded px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase" style={{ backgroundColor: NEON, color: "black" }}>
-                  {"\u26A1"} FLASH
+                  Flash
                 </span>
               )}
             </div>
@@ -506,22 +514,22 @@ function Brief({ data, form }: { data: RecommendResponse; form: RecommendRequest
   const idleTime = hasSwitch ? "~15 min idle (vs 45 min without switching)" : "~45 min idle between orders";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Verdict */}
-      <header>
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#888]">
-          {form.day_of_week} &middot; {form.date}
-        </p>
-        <h2 className="mt-3 font-serif text-2xl italic text-[#999]">
-          Hi, {form.rider_name}.
-        </h2>
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <h3 className="font-mono text-6xl font-black leading-none tracking-tight text-white sm:text-7xl">
-            {VERDICT_LABEL[r.recommendation]}
-          </h3>
-          <p className="font-mono text-sm" style={{ color: r.confidence === "high" ? NEON : r.confidence === "medium" ? "#FFA500" : ALERT_RED }}>
+      <header className="rounded-2xl border border-[#292c2a] bg-[#111312] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.24)] sm:p-7">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#9ca19a]">
+            {form.day_of_week} &middot; {form.date} &middot; Hi, {form.rider_name}
+          </p>
+          <p className="rounded-full bg-[#C7F43D]/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: r.confidence === "high" ? NEON : r.confidence === "medium" ? "#FFA500" : ALERT_RED }}>
             {CONFIDENCE_LABEL[r.confidence]}
           </p>
+        </div>
+        <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="font-mono text-5xl font-semibold leading-[0.88] tracking-[-0.04em] text-white sm:text-7xl xl:text-[5.25rem]">
+            {VERDICT_LABEL[r.recommendation]}
+          </h2>
+          <span className="mb-1 h-3 w-3 rounded-full bg-[#C7F43D] shadow-[0_0_18px_rgba(199,244,61,0.45)]" aria-hidden />
         </div>
         <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-[#999]">
           {VERDICT_SUB[r.recommendation]}.
@@ -542,7 +550,7 @@ function Brief({ data, form }: { data: RecommendResponse; form: RecommendRequest
             vs 7-day avg RM{form.recent_7day_avg_net_rm.toFixed(0)}
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-px overflow-hidden rounded-xl bg-[#222]">
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl bg-[#292c2a] sm:grid-cols-3">
           <Stat label="Gross" value={`RM ${r.projected_gross_rm.toFixed(0)}`} />
           <Stat label="Petrol" value={`\u2212 RM ${r.projected_petrol_rm.toFixed(0)}`} />
           <Stat
@@ -553,13 +561,13 @@ function Brief({ data, form }: { data: RecommendResponse; form: RecommendRequest
           />
         </div>
         {/* RESULT: delivery density & idle time */}
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div className="rounded-lg border border-[#222] bg-[#111] p-3 text-center">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl bg-[#151716] p-4 text-left">
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#888]">Delivery Density</p>
             <p className="font-mono text-lg font-bold mt-1" style={{ color: NEON }}>{deliveriesPerHr}</p>
             <p className="font-mono text-[9px] text-[#666] mt-1">Back-to-back during peak</p>
           </div>
-          <div className="rounded-lg border border-[#222] bg-[#111] p-3 text-center">
+          <div className="rounded-xl bg-[#151716] p-4 text-left">
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#888]">Idle Time</p>
             <p className="font-mono text-lg font-bold mt-1" style={{ color: hasSwitch ? NEON : "#FFA500" }}>{idleTime}</p>
             <p className="font-mono text-[9px] text-[#666] mt-1">Less waiting = more earning</p>
@@ -574,7 +582,7 @@ function Brief({ data, form }: { data: RecommendResponse; form: RecommendRequest
           {r.shift_windows.map((w, i) => (
             <div
               key={i}
-              className="flex items-center justify-between gap-4 rounded-lg border border-[#222] bg-[#111] px-5 py-4"
+              className="flex flex-col items-start justify-between gap-3 rounded-xl bg-[#151716] px-5 py-4 sm:flex-row sm:items-center"
             >
               <span className="font-mono text-2xl font-bold tracking-tight text-white">
                 {w.start}
@@ -610,7 +618,7 @@ function Brief({ data, form }: { data: RecommendResponse; form: RecommendRequest
       {/* Reasoning */}
       <section>
         <SectionLabel>What Your Shift Coach is Thinking</SectionLabel>
-        <blockquote className="rounded-xl border-l-4 bg-[#111] p-5 font-serif text-lg italic leading-relaxed text-white" style={{ borderColor: NEON }}>
+        <blockquote className="rounded-2xl bg-[#151716] p-5 font-serif text-xl italic leading-relaxed text-white sm:p-6">
           &ldquo;{r.reasoning_narrative}&rdquo;
         </blockquote>
       </section>
@@ -622,13 +630,13 @@ function Brief({ data, form }: { data: RecommendResponse; form: RecommendRequest
           {r.key_factors.map((f, i) => (
             <li key={i} className="grid grid-cols-[auto_1fr_auto] items-baseline gap-4 py-4">
               <span
-                className="font-mono text-lg"
+                className="mt-0.5"
                 style={{
                   color: f.impact === "positive" ? NEON : f.impact === "negative" ? ALERT_RED : "#666",
                 }}
                 aria-hidden
               >
-                {IMPACT_GLYPH[f.impact]}
+                {f.impact === "positive" ? <TrendingUp size={18} /> : f.impact === "negative" ? <TrendingDown size={18} /> : <Activity size={18} />}
               </span>
               <div>
                 <p className="font-medium text-white">{f.factor}</p>
@@ -651,7 +659,7 @@ function Brief({ data, form }: { data: RecommendResponse; form: RecommendRequest
           <ul className="space-y-2">
             {r.caveats.map((cav, i) => (
               <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-[#ccc]">
-                <span style={{ color: ALERT_RED }} aria-hidden>{"\u26A0"}</span>
+                <AlertTriangle size={16} className="mt-1 shrink-0" style={{ color: ALERT_RED }} aria-hidden />
                 <span>{cav}</span>
               </li>
             ))}
@@ -706,7 +714,7 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
 function UnderlineField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.2em] text-[#666]">
+      <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-[#9ca19a]">
         {label}
       </span>
       {children}
@@ -759,7 +767,8 @@ function CustomSelect({
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
-        className="flex w-full items-center justify-between border-b border-[#333] bg-transparent py-1.5 font-mono text-sm text-white hover:border-[#555] focus:border-[#CCFF00] focus:outline-none"
+        aria-expanded={open}
+        className="flex min-h-10 w-full items-center justify-between border-b border-[#3a3d3b] bg-transparent py-1.5 font-mono text-sm text-white hover:border-[#6c716b] focus:border-[#C7F43D] focus:outline-none"
       >
         <span>{value}</span>
         <span className="text-xs text-[#666]" aria-hidden>{open ? "\u25B4" : "\u25BE"}</span>

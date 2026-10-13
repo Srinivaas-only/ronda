@@ -125,7 +125,20 @@
     }
   html {
     @apply font-sans;
+    color-scheme: dark;
+    scroll-behavior: smooth;
     }
+  body {
+    background: #090a0a;
+  }
+  ::selection {
+    background: #c7f43d;
+    color: #090a0a;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #3a3d3b #111312;
+  }
 }
 
 @theme inline {
